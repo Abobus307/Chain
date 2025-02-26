@@ -1,0 +1,443 @@
+print("Script Working")
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+--[[ 
+  ██ ▄█▀▓██   ██▓ ▄▄▄       ███▄ ▄███▓ ███▄ ▄███▓▓█████  ██▀███  
+  ██▄█▒  ▒██  ██▒▒████▄    ▓██▒▀█▀ ██▒▓██▒▀█▀ ██▒▓█   ▀ ▓██ ▒ ██▒
+▓███▄░    ▒██ ██░▒██  ▀█▄  ▓██    ▓██░▓██    ▓██░▒███   ▓██ ░▄█ ▒
+▓██ █▄    ░ ▐██▓░░██▄▄▄▄██ ▒██    ▒██ ▒██    ▒██ ▒▓█  ▄ ▒██▀▀█▄  
+▒██▒ █▄   ░ ██▒▓░ ▓█   ▓██▒▒██▒   ░██▒▒██▒   ░██▒░▒████▒░██▓ ▒██▒
+▒ ▒▒ ▓▒    ██▒▒▒  ▒▒   ▓▒█░░ ▒░   ░  ░░ ▒░   ░  ░░░ ▒░ ░░ ▒▓ ░▒▓░
+░ ░▒ ▒░ ▓██ ░▒░   ▒   ▒▒ ░░  ░      ░░  ░      ░ ░ ░  ░  ░▒ ░ ▒░
+░ ░░ ░  ▒ ▒ ░░    ░   ▒   ░      ░   ░      ░      ░     ░░   ░ 
+░  ░    ░ ░           ░  ░       ░          ░      ░  ░   ░     
+        ░ ░                                                      
+
+Секретная система шифрования от Вася2
+]]
+
+local function _XOR_D3CRYPT(data, key)
+    local result = {}
+    for i = 1, #data do
+        local b = data:byte(i)
+        result[i] = string.char(bit32.bxor(b, key:byte((i-1) % #key + 1)))
+    end
+    return table.concat(result)
+end
+
+local _SECRET_DATA = {
+    [1] = 16, [2] = 65, [3] = 237, [4] = 49, 
+    [5] = 237, [6] = 243, [7] = 15, [8] = 26, [9] = 234
+}
+
+local function _GET_KEY()
+    local transformed = {}
+    for k, v in pairs(_SECRET_DATA) do
+        table.insert(transformed, (v + 0x17) % 256)
+    end
+    return _XOR_D3CRYPT(string.char(table.unpack(transformed)), "q9w!e8r^")
+end
+
+Rayfield:Notify({
+   Title = "Hello!",
+   Content = "Enjoy the script :)",
+   Duration = 6.5,
+   Image = 4483362458,
+})
+
+local Window = Rayfield:CreateWindow({
+   Name = "Chain Script by Вася2",
+   Icon = 0, 
+   LoadingTitle = "Chain",
+   LoadingSubtitle = "By Вася2",
+   Theme = "Default",
+   Discord = {
+      Enabled = true, 
+      Invite = "BxvGxzDB", 
+      RememberJoins = true 
+   },
+   KeySystem = true, 
+   KeySettings = {
+      Title = "Vasia2",
+      Subtitle = "Key System",
+      Note = "Join to discord server for key: https://discord.gg/BxvGxzDB", 
+      FileName = "ChainKey",
+      SaveKey = true, 
+      GrabKeyFromSite = false,
+      Key = {_GET_KEY()}
+   }
+})
+
+local KillerTab = Window:CreateTab("Killer Tab", 4483362458)
+
+local killerESPComponents = {}
+local killerESPConnection = nil
+local killerRenderConnection = nil
+local killerScreenGui = nil
+
+local function startKillerESP()
+    killerScreenGui = Instance.new("ScreenGui")
+    killerScreenGui.DisplayOrder = 10
+    killerScreenGui.IgnoreGuiInset = true
+    killerScreenGui.Parent = game:GetService("CoreGui")
+
+    local KillersFolder = workspace:WaitForChild("Misc"):WaitForChild("AI")
+
+    local function createKillerESP(killer)
+        if killer.Name ~= "CHAIN" then return end
+        
+        local bodyHighlight = Instance.new("Highlight")
+        bodyHighlight.Name = "KillerBodyHighlight"
+        bodyHighlight.FillColor = Color3.new(1, 0, 0)
+        bodyHighlight.OutlineColor = Color3.new(1, 1, 1)
+        bodyHighlight.Adornee = killer
+        bodyHighlight.Parent = killer
+        
+        -- Создаем экранный элемент, аналогичный ESP
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(0, 120, 0, 50)
+        frame.BackgroundTransparency = 1
+        frame.AnchorPoint = Vector2.new(0.5, 1)
+        frame.Parent = killerScreenGui
+
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.Font = Enum.Font.GothamBold
+        textLabel.RichText = true
+        textLabel.TextScaled = true
+        textLabel.Text = string.format("<font color='#FF0000'><b>%s</b></font> <font color='#00FF00'>[0.0 m]</font>", killer.Name)
+        textLabel.Parent = frame
+
+        table.insert(killerESPComponents, { 
+            killer = killer, 
+            frame = frame, 
+            textLabel = textLabel, 
+            highlight = bodyHighlight 
+        })
+    end
+
+    for _, killer in ipairs(KillersFolder:GetChildren()) do
+        createKillerESP(killer)
+    end
+
+    killerESPConnection = KillersFolder.ChildAdded:Connect(function(killer)
+        createKillerESP(killer)
+    end)
+
+    killerRenderConnection = game:GetService("RunService").RenderStepped:Connect(function()
+        local player = game:GetService("Players").LocalPlayer
+        local character = player and player.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        
+        if hrp then
+            local camera = workspace.CurrentCamera
+            for _, comp in ipairs(killerESPComponents) do
+                local killer = comp.killer
+                if killer and killer.Parent then
+                    local head = killer:FindFirstChild("Head")
+                    if head then
+                        local pos, visible = camera:WorldToViewportPoint(head.Position)
+                        if visible then
+                            local scale = 1 / (pos.Z * math.tan(math.rad(camera.FieldOfView * 0.5)) * 2) * 1000
+                            local width = math.floor(1 * scale)
+                            local height = math.floor(3 * scale)
+                            local x = math.floor(pos.X)
+                            local y = math.floor(pos.Y)
+                            local xPosition = math.floor(x - width * 0.5)
+                            local yPosition = math.floor((y - height * 1.5) + (0.5 * scale))
+                            comp.frame.Position = UDim2.new(0, xPosition, 0, yPosition)
+                            
+                            local distance = (hrp.Position - head.Position).Magnitude
+                            comp.textLabel.Text = string.format("<font color='#FF0000'><b>%s</b></font> <font color='#00FF00'>[%.1f m]</font>", killer.Name, distance)
+                            comp.frame.Visible = true
+                        else
+                            comp.frame.Visible = false
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function stopKillerESP()
+    if killerESPConnection then
+        killerESPConnection:Disconnect()
+        killerESPConnection = nil
+    end
+    if killerRenderConnection then
+        killerRenderConnection:Disconnect()
+        killerRenderConnection = nil
+    end
+    if killerScreenGui then
+        killerScreenGui:Destroy()
+        killerScreenGui = nil
+    end
+    for _, comp in pairs(killerESPComponents) do
+        if comp.highlight then
+            comp.highlight:Destroy()
+        end
+        if comp.frame then
+            comp.frame:Destroy()
+        end
+    end
+    killerESPComponents = {}
+end
+
+local ToggleKillerESP = KillerTab:CreateToggle({
+    Name = "Killer ESP",
+    CurrentValue = false,
+    Flag = "KillerESP",
+    Callback = function(Value)
+        if Value then
+            startKillerESP()
+        else
+            stopKillerESP()
+        end
+    end
+})
+
+local ScrapTab = Window:CreateTab("Scrap Tab", 4483362458)
+
+local ScrapController = {
+    Active = false,
+    Cooldown = 1
+}
+
+local function autoCollectScrap()
+    local Workspace = game:GetService("Workspace")
+    local Players = game:GetService("Players")
+    local Camera = Workspace.CurrentCamera
+    local LocalPlayer = Players.LocalPlayer
+    local MiscFolder = Workspace:WaitForChild("Misc")
+    local ZonesFolder = MiscFolder:WaitForChild("Zones")
+    local LootFolders = ZonesFolder:WaitForChild("LootingItems"):WaitForChild("Scrap")
+    
+    local scrapCounter = 0
+    local function lookAt(cframe)
+        local lookAtPos = CFrame.new(Camera.CFrame.Position, cframe.Position)
+        Camera.CFrame = lookAtPos
+    end
+    local function bringPlr(cframe)
+        local character = LocalPlayer.Character
+        if character then
+            character:PivotTo(cframe)
+        end
+    end
+    local function collect(scrap)
+        scrapCounter = scrapCounter + 1
+        local pivotCFrame = scrap:GetPivot()
+        local proximityPrompt = scrap:FindFirstChildWhichIsA("ProximityPrompt", true)
+        if proximityPrompt then
+            task.wait(0.4)
+            lookAt(pivotCFrame)
+            task.wait(0.2)
+            fireproximityprompt(proximityPrompt)
+        else
+            print("Skipped scrap: " .. scrapCounter)
+        end
+    end
+
+    for _, scraps in ipairs(LootFolders:GetChildren()) do
+        local values = scraps:WaitForChild("Values")
+        if scraps:GetAttribute("Scrap") ~= nil and scraps:IsA("Model") and values:GetAttribute("Available") == true then
+            bringPlr(scraps:GetPivot())
+            collect(scraps)
+        end
+        task.wait(0.2)
+    end
+end
+
+local ScrapButton = ScrapTab:CreateButton({
+   Name = "Auto Collect Scrap",
+   Callback = function()
+       autoCollectScrap()
+   end,
+})
+
+local scrapESPComponents = {}
+local scrapESPConnection = nil
+local scrapScreenGui = nil
+
+local function startScrapESP()
+    scrapScreenGui = Instance.new("ScreenGui")
+    scrapScreenGui.DisplayOrder = 10
+    scrapScreenGui.IgnoreGuiInset = true
+    scrapScreenGui.Parent = game:GetService('CoreGui')
+    
+    local Bin = {}
+    Bin.__index = Bin
+    function Bin.new()
+        local self = setmetatable({}, Bin)
+        return self
+    end
+    function Bin:add(item)
+        local node = { item = item }
+        if not self.head then
+            self.head = node
+        else
+            self.tail.next = node
+        end
+        self.tail = node
+        return self
+    end
+    function Bin:destroy()
+        local node = self.head
+        while node do
+            local item = node.item
+            if type(item) == "function" then
+                item()
+            elseif typeof(item) == "RBXScriptConnection" then
+                item:Disconnect()
+            elseif type(item) == "thread" then
+                task.cancel(item)
+            elseif item.destroy then
+                item:destroy()
+            elseif item.Destroy then
+                item:Destroy()
+            end
+            node = node.next
+        end
+        self.head = nil
+        self.tail = nil
+    end
+
+    local BaseComponent = {}
+    BaseComponent.__index = BaseComponent
+    function BaseComponent.new(item)
+        local self = setmetatable({}, BaseComponent)
+        self.bin = Bin.new()
+        self.object = item
+        return self
+    end
+    function BaseComponent:destroy()
+        self.bin:destroy()
+    end
+
+    local LootableComponent = {}
+    LootableComponent.__index = LootableComponent
+    setmetatable(LootableComponent, {__index = BaseComponent})
+    function LootableComponent.new(isAvailable, scrap, pivot)
+        local self = setmetatable(BaseComponent.new(scrap), LootableComponent)
+        self.interface = {
+            container = Instance.new("Frame"),
+            name = Instance.new("TextLabel"),
+        }
+        self.pivotPos = pivot
+        self.isAvailable = isAvailable
+
+        self:initialize()
+        return self
+    end
+    function LootableComponent:initialize()
+        local bin = self.bin
+        local interface = self.interface
+        local instance = self.object
+        local values = instance:WaitForChild("Values", 10)
+        
+        local container = interface.container
+        local name = interface.name
+
+        container.Visible = false
+        container.AnchorPoint = Vector2.new(0.5, 0)
+        container.BackgroundTransparency = 1
+        name.BackgroundTransparency = 1
+        name.Font = Enum.Font.GothamBlack
+        name.RichText = true
+        name.Text = "<font color='#FF4500'><b>SCRAP</b></font>"
+        name.TextColor3 = Color3.new(1, 1, 1)
+        name.TextSize = 18
+        name.TextStrokeTransparency = 0.5
+        name.Size = UDim2.new(1, 0, 0, 18)
+        container.Size = UDim2.new(0, 120, 0, 50)
+        name.Parent = container
+        container.Parent = scrapScreenGui
+        
+        bin:add(values:GetAttributeChangedSignal('Available'):Connect(function()
+            self.isAvailable = values:GetAttribute('Available')
+        end))
+        bin:add(game:GetService("RunService").RenderStepped:Connect(function()
+            self:render()
+        end))
+    end
+    function LootableComponent:render()
+        local camera = workspace.CurrentCamera
+        local instance = self.object
+        local pivot = self.pivotPos
+        local interface = self.interface
+        local container = interface.container
+        local name = interface.name
+        local player = game:GetService("Players").LocalPlayer
+        
+        if camera and instance then
+            local position, visible = camera:WorldToViewportPoint(pivot.Position)
+            if visible and self.isAvailable and player.Character and player.Character:FindFirstChild('HumanoidRootPart') then
+                local scale = 1 / (position.Z * math.tan(math.rad(camera.FieldOfView * 0.5)) * 2) * 1000
+                local width = math.floor(1 * scale)
+                local height = math.floor(3 * scale)
+                local x = math.floor(position.X)
+                local y = math.floor(position.Y)
+                local xPosition = math.floor(x - width * 0.5)
+                local yPosition = math.floor((y - height * 0.5) + (0.5 * scale))
+                container.Visible = true
+                local diff = (player.Character.HumanoidRootPart.Position - pivot.Position).Magnitude
+                name.Text = string.format("<font color='#FF4500'><b>SCRAP</b></font> <font color='#00FFFF'>[%.1f m]</font>", diff)
+                container.Position = UDim2.new(0, xPosition, 0, yPosition)
+            else
+                container.Visible = false
+            end
+        else
+            self:destroy()
+        end
+    end
+
+    local LootFolders = workspace:WaitForChild("Misc"):WaitForChild("Zones"):WaitForChild("LootingItems"):WaitForChild("Scrap")
+    for _, v in ipairs(LootFolders:GetChildren()) do
+        if v:GetAttribute('Scrap') then
+            local values = v:WaitForChild("Values")
+            local component = LootableComponent.new(values:GetAttribute('Available'), v, v:GetPivot())
+            table.insert(scrapESPComponents, component)
+        end
+    end
+    scrapESPConnection = LootFolders.ChildAdded:Connect(function(v)
+        if v:GetAttribute('Scrap') then
+            local values = v:WaitForChild("Values")
+            local component = LootableComponent.new(values:GetAttribute('Available'), v, v:GetPivot())
+            table.insert(scrapESPComponents, component)
+        end
+    end)
+end
+
+local function stopScrapESP()
+    if scrapESPConnection then
+        scrapESPConnection:Disconnect()
+        scrapESPConnection = nil
+    end
+    if scrapESPComponents then
+        for _, comp in ipairs(scrapESPComponents) do
+            if comp and comp.destroy then
+                comp:destroy()
+            end
+        end
+        scrapESPComponents = {}
+    end
+    if scrapScreenGui then
+        scrapScreenGui:Destroy()
+        scrapScreenGui = nil
+    end
+end
+
+local ToggleScrapESP = ScrapTab:CreateToggle({
+   Name = "Esp Scrap",
+   CurrentValue = false,
+   Flag = "Scrap",
+   Callback = function(Value)
+       if Value then
+           startScrapESP()
+       else
+           stopScrapESP()
+       end
+   end,
+})
