@@ -1,5 +1,7 @@
 print("Script Working")
 
+if game.PlaceId~=13977939077 then game.Players.LocalPlayer:Kick("This script only works on CHAIN SURVIVAL MODE!")end;
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 --[[ 
