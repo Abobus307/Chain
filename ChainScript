@@ -9,7 +9,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 --[[ 
   ██ ▄█▀▓██   ██▓ ▄▄▄       ███▄ ▄███▓ ███▄ ▄███▓▓█████  ██▀███  
   ██▄█▒  ▒██  ██▒▒████▄    ▓██▒▀█▀ ██▒▓██▒▀█▀ ██▒▓█   ▀ ▓██ ▒ ██▒
-▓███▄░    ▒██ ██░▒██  ▀█▄  ▓██    ▓██░▓██    ▓██░▒███   ▓██ ░▄█ ▒
+▓███▄░    ▒██ ██░▒██  ▀█▄  ▓██    ▓██░▓██    ▒██░▒███   ▓██ ░▄█ ▒
 ▓██ █▄    ░ ▐██▓░░██▄▄▄▄██ ▒██    ▒██ ▒██    ▒██ ▒▓█  ▄ ▒██▀▀█▄  
 ▒██▒ █▄   ░ ██▒▓░ ▓█   ▓██▒▒██▒   ░██▒▒██▒   ░██▒░▒████▒░██▓ ▒██▒
 ▒ ▒▒ ▓▒    ██▒▒▒  ▒▒   ▓▒█░░ ▒░   ░  ░░ ▒░   ░  ░░░ ▒░ ░░ ▒▓ ░▒▓░
@@ -190,7 +190,7 @@ local function stopKillerESP()
 end
 
 local ToggleKillerESP = KillerTab:CreateToggle({
-    Name = "Killer ESP",
+    Name = "Killer Esp",
     CurrentValue = false,
     Flag = "KillerESP",
     Callback = function(Value)
@@ -199,8 +199,62 @@ local ToggleKillerESP = KillerTab:CreateToggle({
         else
             stopKillerESP()
         end
-    end
+    end,
 })
+
+local aimbotKeyString = "E"
+local aimbotKey = Enum.KeyCode[aimbotKeyString] or Enum.KeyCode.E
+local aiming = false
+
+local AimbotInput = KillerTab:CreateInput({
+   Name = "Aimbot For Guns",
+   CurrentValue = "R",
+   PlaceholderText = "Input Placeholder",
+   RemoveTextAfterFocusLost = false,
+   Flag = "AimbotKey",
+   Callback = function(Text)
+      aimbotKeyString = Text:upper()
+      if Enum.KeyCode[aimbotKeyString] then
+          aimbotKey = Enum.KeyCode[aimbotKeyString]
+      else
+          aimbotKey = Enum.KeyCode.E
+      end
+   end,
+})
+
+local function aimAtKiller()
+    local killerModel = workspace:FindFirstChild("Misc") 
+                      and workspace.Misc:FindFirstChild("AI") 
+                      and workspace.Misc.AI:FindFirstChild("CHAIN")
+    if killerModel then
+        local killerHead = killerModel:FindFirstChild("Head")
+        if killerHead then
+            local camera = workspace.CurrentCamera
+            camera.CFrame = CFrame.new(camera.CFrame.Position, killerHead.Position)
+        end
+    end
+end
+
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == aimbotKey then
+        aiming = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if input.KeyCode == aimbotKey then
+        aiming = false
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if aiming then
+        aimAtKiller()
+    end
+end)
 
 local ScrapTab = Window:CreateTab("Scrap Tab", 4483362458)
 
@@ -443,40 +497,4 @@ local ToggleScrapESP = ScrapTab:CreateToggle({
            stopScrapESP()
        end
    end,
-})
-
-local telePart = Instance.new("Part")
-telePart.Name = "TelePart"
-telePart.Size = Vector3.new(10, 1, 10)
-telePart.Anchored = true
-telePart.CanCollide = true
-telePart.Transparency = 1
-telePart.Position = Vector3.new(0, 199, 0)
-telePart.Parent = workspace
-
-local TeleportTab = Window:CreateTab("Auto Survivals Tab", 4483362458)
-local originalCFrame
-
-local TeleportToggle = TeleportTab:CreateToggle({
-    Name = "AutoFarm Survivals",
-    CurrentValue = false,
-    Flag = "TeleportUnderMap",
-    Callback = function(Value)
-        local player = game:GetService("Players").LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if not hrp then return end
-
-        if Value then
-            originalCFrame = hrp.CFrame
-            local offset = (telePart.Size.Y / 2) + 3
-            local newPos = Vector3.new(telePart.Position.X, telePart.Position.Y + offset, telePart.Position.Z)
-            character:PivotTo(CFrame.new(newPos))
-        else
-            if originalCFrame then
-                character:PivotTo(originalCFrame)
-                originalCFrame = nil
-            end
-        end
-    end,
 })
