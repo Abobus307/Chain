@@ -235,30 +235,8 @@ local ToggleKillerESP = KillerTab:CreateToggle({
     end,
 })
 
-local aimbotKeyString = "E"
-local aimbotKey = Enum.KeyCode[aimbotKeyString] or Enum.KeyCode.E
-local aiming = false
-
-local AimbotInput = KillerTab:CreateInput({
-   Name = "Aimbot For Guns",
-   CurrentValue = "R",
-   PlaceholderText = "Input Placeholder",
-   RemoveTextAfterFocusLost = false,
-   Flag = "AimbotKey",
-   Callback = function(Text)
-      aimbotKeyString = Text:upper()
-      if Enum.KeyCode[aimbotKeyString] then
-          aimbotKey = Enum.KeyCode[aimbotKeyString]
-      else
-          aimbotKey = Enum.KeyCode.E
-      end
-   end,
-})
-
 local function aimAtKiller()
-    local killerModel = workspace:FindFirstChild("Misc") 
-                      and workspace.Misc:FindFirstChild("AI") 
-                      and workspace.Misc.AI:FindFirstChild("CHAIN")
+    local killerModel = workspace:FindFirstChild("Misc") and workspace.Misc:FindFirstChild("AI") and workspace.Misc.AI:FindFirstChild("CHAIN")
     if killerModel then
         local killerHead = killerModel:FindFirstChild("Head")
         if killerHead then
@@ -268,21 +246,19 @@ local function aimAtKiller()
     end
 end
 
-local UserInputService = game:GetService("UserInputService")
+local aiming = false
+
+local KeybindAimbot = KillerTab:CreateKeybind({
+   Name = "Aimbot For Guns", 
+   CurrentKeybind = "R", 
+   HoldToInteract = false,
+   Flag = "AimbotKey",
+   Callback = function(Keybind)
+       aiming = not aiming
+   end,
+})
+
 local RunService = game:GetService("RunService")
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == aimbotKey then
-        aiming = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input, gameProcessed)
-    if input.KeyCode == aimbotKey then
-        aiming = false
-    end
-end)
-
 RunService.RenderStepped:Connect(function()
     if aiming then
         aimAtKiller()
@@ -520,7 +496,7 @@ local function stopScrapESP()
 end
 
 local ToggleScrapESP = ScrapTab:CreateToggle({
-   Name = "Esp Scrap",
+   Name = "Scrap Esp",
    CurrentValue = false,
    Flag = "Scrap",
    Callback = function(Value)
