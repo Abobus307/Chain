@@ -1,47 +1,8 @@
 print("Script Working")
 
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1336748138291007649/ecAVxkffAqxuHkza0cILj7i9wAqAZTX9FDtoyHl1UtO_uWQIDW6iHzMpmCLXHedJSIqt"
-
 if game.PlaceId ~= 13977939077 then 
     game.Players.LocalPlayer:Kick("This script only works on CHAIN SURVIVAL MODE!")
 end
-
-function SendMessageEMBED(url, embed)
-    local http = game:GetService("HttpService")
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
-    local data = {
-        ["embeds"] = {{
-            ["title"] = embed.title,
-            ["description"] = embed.description,
-            ["color"] = embed.color,
-            ["fields"] = embed.fields,
-            ["footer"] = {["text"] = embed.footer.text}
-        }}
-    }
-    request({
-        Url = url,
-        Method = "POST",
-        Headers = headers,
-        Body = http:JSONEncode(data)
-    })
-end
-
-pcall(function()
-    getgenv().DetectedExecutor = identifyexecutor()
-    local embed = {
-        ["title"] = "Ник в Роблоксе: "..game.Players.LocalPlayer.Name,
-        ["description"] = "",
-        ["color"] = 65280,
-        ["fields"] = {
-            {["name"] = "Айди: "..game.Players.LocalPlayer.UserId, ["value"] = ""},
-            {["name"] = "Инжектор: "..tostring(getgenv().DetectedExecutor), ["value"] = ""}
-        },
-        ["footer"] = {["text"] = "Использовал скрипт на игру Chain"}
-    }
-    SendMessageEMBED(WEBHOOK_URL, embed)
-end)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -507,3 +468,42 @@ local ToggleScrapESP = ScrapTab:CreateToggle({
        end
    end,
 })
+
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1336748138291007649/ecAVxkffAqxuHkza0cILj7i9wAqAZTX9FDtoyHl1UtO_uWQIDW6iHzMpmCLXHedJSIqt"
+
+function SendMessageEMBED(url, embed)
+    local http = game:GetService("HttpService")
+    local headers = {
+        ["Content-Type"] = "application/json"
+    }
+    local data = {
+        ["embeds"] = {{
+            ["title"] = embed.title,
+            ["description"] = embed.description,
+            ["color"] = embed.color,
+            ["fields"] = embed.fields,
+            ["footer"] = {["text"] = embed.footer.text}
+        }}
+    }
+    request({
+        Url = url,
+        Method = "POST",
+        Headers = headers,
+        Body = http:JSONEncode(data)
+    })
+end
+
+pcall(function()
+    getgenv().DetectedExecutor = identifyexecutor()
+    local embed = {
+        ["title"] = "Ник в Роблоксе: "..game.Players.LocalPlayer.Name,
+        ["description"] = "",
+        ["color"] = 65280,
+        ["fields"] = {
+            {["name"] = "Айди: "..game.Players.LocalPlayer.UserId, ["value"] = ""},
+            {["name"] = "Инжектор: "..tostring(getgenv().DetectedExecutor), ["value"] = ""}
+        },
+        ["footer"] = {["text"] = "Использовал скрипт на игру Chain"}
+    }
+    SendMessageEMBED(WEBHOOK_URL, embed)
+end)
